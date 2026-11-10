@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum OnboardingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum LedgerEntryType {
+  DEBIT
+  CREDIT
+}
+
+model User {
+  id                 String              @id @default(uuid()) @db.Uuid
+  fullName           String              @map("full_name") @db.VarChar(100)
+  email              String              @unique @db.VarChar(254)
+  passwordHash       String              @map("password_hash") @db.VarChar(255)
+  role               UserRole            @default(USER)
+  onboardingStatus   OnboardingStatus    @default(PENDING) @map("onboarding_status")
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  accounts           Account[]
+  onboardingRequests OnboardingRequest[] @relation("Applicant")
+  reviews            OnboardingRequest[] @relation("Reviewer")
+  sessions           Session[]
+  auditEvents        AuditLog[]          @relation("AuditActor")
+
+  @@index([onboardingStatus, createdAt])
+  @@map("users")
+}
+
+model Account {
+  id            String        @id @default(uuid()) @db.Uuid
+  accountNumber String        @unique @map("account_number") @db.VarChar(32)
+  name          String        @db.VarChar(80)
+  currency      String        @default("INR") @db.Char(3)
+  status        AccountStatus @default(ACTIVE)
+  ownerId       String        @map("owner_id") @db.Uuid
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  owner         User          @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  entries       LedgerEntry[]
+
+  @@index([ownerId, createdAt])
+  @@map("accounts")
+}
+
+model OnboardingRequest {
+  id          String           @id @default(uuid()) @db.Uuid
+  applicantId String           @map("applicant_id") @db.Uuid
+  status      OnboardingStatus @default(PENDING)
+  submittedAt DateTime         @default(now()) @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt  DateTime?        @map("reviewed_at") @db.Timestamptz(6)
+  reviewerId  String?          @map("reviewer_id") @db.Uuid
+  reviewNote  String?          @map("review_note") @db.VarChar(500)
+  applicant   User             @relation("Applicant", fields: [applicantId], references: [id], onDelete: Restrict)
+  reviewer    User?            @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@index([status, submittedAt])
+  @@map("onboarding_requests")
+}
+
+model LedgerEntry {
+  id             String          @id @default(uuid()) @db.Uuid
+  transactionRef String          @map("transaction_ref") @db.Uuid
+  accountId      String          @map("account_id") @db.Uuid
+  entryType      LedgerEntryType @map("entry_type")
+  amount         Decimal         @db.Decimal(19, 2)
+  currency       String          @db.Char(3)
+  description    String?         @db.VarChar(250)
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  account        Account         @relation(fields: [accountId], references: [id], onDelete: Restrict)
+
+  @@index([accountId, createdAt])
+  @@index([transactionRef])
+  @@map("ledger_entries")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorId      String?  @map("actor_id") @db.Uuid
+  action       String   @db.VarChar(100)
+  resourceType String   @map("resource_type") @db.VarChar(80)
+  resourceId   String?  @map("resource_id") @db.VarChar(100)
+  outcome      String   @db.VarChar(30)
+  metadata     Json     @default("{}")
+  requestId    String?  @map("request_id") @db.VarChar(100)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  actor        User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}
+
+model Session {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
