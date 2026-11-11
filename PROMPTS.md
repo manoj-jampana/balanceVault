@@ -1,4 +1,3 @@
-
 # BalanceVault - AI Usage Log
 
 This document records AI assistance used during development.
@@ -22,8 +21,11 @@ Database permissions and Prisma operations required additional testing.
 ### How it was addressed
 Database roles were configured and tested against the development database.
 
-### Commit
-Pending: add the actual commit URL after committing the implementation.
+### Related commits
+- Database migration: https://github.com/manoj-jampana/balanceVault/commit/762fa59
+- Backend implementation: https://github.com/manoj-jampana/balanceVault/commit/e665957
+
+---
 
 ## Entry 2 - 2026-11-10 - Authentication and Authorization
 
@@ -42,8 +44,10 @@ Frontend route protection alone was insufficient to protect administrator data.
 ### How it was addressed
 Backend authorization middleware was used to enforce administrator permissions independently of the frontend.
 
-### Commit
-Pending: add the actual commit URL after committing the implementation.
+### Related commit
+https://github.com/manoj-jampana/balanceVault/commit/e665957
+
+---
 
 ## Entry 3 - 2026-11-10 - Audit Logging
 
@@ -61,8 +65,10 @@ The initial Prisma create operation encountered a database permission error.
 ### How it was addressed
 Audit insertion was changed to a parameterized raw SQL INSERT statement. The audit connection was tested successfully.
 
-### Commit
-Pending: add the actual commit URL after committing the implementation.
+### Related commit
+https://github.com/manoj-jampana/balanceVault/commit/e665957
+
+---
 
 ## Entry 4 - 2026-11-11 - Account Operations
 
@@ -81,8 +87,10 @@ The initial account routes did not include all required operations.
 ### How it was addressed
 Deposit, withdrawal, transfer, and ledger endpoints were implemented and tested using synthetic accounts.
 
-### Commit
-Pending: add the actual commit URL after committing the implementation.
+### Related commit
+https://github.com/manoj-jampana/balanceVault/commit/e665957
+
+---
 
 ## Entry 5 - 2026-11-11 - Frontend Integration
 
@@ -101,8 +109,10 @@ An incorrect hook export and duplicate declarations caused frontend errors.
 ### How it was addressed
 API service logic and authentication context were separated into their respective files. The frontend was tested again.
 
-### Commit
-Pending: add the actual commit URL after committing the implementation.
+### Related commit
+https://github.com/manoj-jampana/balanceVault/commit/855c9b5
+
+---
 
 ## Entry 6 - 2026-11-11 - Authorization Security Testing
 
@@ -120,8 +130,11 @@ The first frontend test used an incorrect route.
 ### How it was addressed
 The correct `/admin` route was tested. The normal user was redirected to an allowed page. A logged-in normal user received HTTP 403 from `/api/admin/users`.
 
-### Commit
-Pending: add the actual commit URL after committing the implementation.
+### Related commits
+- Backend authorization implementation: https://github.com/manoj-jampana/balanceVault/commit/e665957
+- Frontend integration: https://github.com/manoj-jampana/balanceVault/commit/855c9b5
+
+---
 
 ## Entry 7 - 2026-11-11 - Admin Audit Interface
 
@@ -139,5 +152,5 @@ The original audit page displayed sample data instead of persisted database even
 ### How it was addressed
 The page was connected to the backend audit endpoint and verified with actual audit records.
 
-### Commit
-Pending: add the actual commit URL after committing the implementation.
+### Related commit
+https://github.com/manoj-jampana/balanceVault/commit/855c9b5
