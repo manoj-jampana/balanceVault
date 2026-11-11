@@ -1,0 +1,4 @@
+import "dotenv/config";
+import { z } from "zod";
+const schema = z.object({ NODE_ENV:z.enum(["development","test","production"]).default("development"), PORT:z.coerce.number().int().positive().default(4000), FRONTEND_URL:z.string().url(), DATABASE_URL:z.string().min(1), DIRECT_URL:z.string().min(1), AUDIT_DATABASE_URL:z.string().min(1), JWT_ACCESS_SECRET:z.string().min(32), JWT_ACCESS_EXPIRES_IN:z.string().default("15m"), BCRYPT_ROUNDS:z.coerce.number().int().min(10).max(15).default(12), REDIS_URL:z.string().min(1), RATE_LIMIT_WINDOW_MS:z.coerce.number().positive().default(60000), RATE_LIMIT_MAX:z.coerce.number().int().positive().default(100), AUTH_RATE_LIMIT_MAX:z.coerce.number().int().positive().default(10) });
+const result=schema.safeParse(process.env); if(!result.success){console.error("Invalid environment:",result.error.flatten().fieldErrors);process.exit(1);} export const env=result.data;
